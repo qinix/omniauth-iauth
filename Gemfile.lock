@@ -8,6 +8,7 @@ PATH
 GEM
   remote: https://rubygems.org/
   specs:
+    coderay (1.1.0)
     hashie (3.3.1)
     httparty (0.13.3)
       json (~> 1.8)
@@ -15,16 +16,23 @@ GEM
     iauth (1.0.1)
       httparty
     json (1.8.1)
+    method_source (0.8.2)
     multi_xml (0.5.5)
     omniauth (1.2.2)
       hashie (>= 1.2, < 4)
       rack (~> 1.0)
+    pry (0.10.1)
+      coderay (~> 1.1.0)
+      method_source (~> 0.8.1)
+      slop (~> 3.4)
     rack (1.5.2)
     rake (10.3.2)
+    slop (3.6.0)
 
 PLATFORMS
   ruby
 
 DEPENDENCIES
   omniauth-iauth!
+  pry
   rake

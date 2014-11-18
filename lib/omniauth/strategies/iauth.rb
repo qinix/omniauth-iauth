@@ -11,6 +11,7 @@ module OmniAuth
 
       option :app_id, nil
       option :app_secret, nil
+      option :authorize_params, {}
       option :uid, nil
       option :access_token, nil
       option :access_secret, nil
@@ -28,21 +29,22 @@ module OmniAuth
         verifier = request.params['verifier']
         state = request.params['state']
         fail!(:invalid_request, CallbackError.new(:invalid_request)) unless state == session['omniauth.state']
-        iauth = IAuth.new options.app_id, options.app_secret
+        iauth = ::IAuth.new options.app_id, options.app_secret
         if operate == 'login'
-          self.access = iauth.login verifier, state
+          c = iauth.login verifier, state
         elsif operate == 'auth'
-          self.access = iauth.auth verifier, state
+          c = iauth.auth verifier, state
         else
           fail!(:invalid_request, CallbackError.new(:invalid_request))
         end
+        options.uid = c['uid']
+        options.access_token = c['access_token']
+        options.access_secret = c['access_secret']
         super
       rescue ::Timeout::Error => e
         fail!(:timeout, e)
       rescue ::Net::HTTPFatalError, ::OpenSSL::SSL::SSLError => e
         fail!(:service_unavailable, e)
-      rescue ::OAuth::Unauthorized => e
-        fail!(:invalid_credentials, e)
       rescue ::MultiJson::DecodeError => e
         fail!(:invalid_response, e)
       rescue ::OmniAuth::NoSessionError => e
@@ -50,19 +52,20 @@ module OmniAuth
       end
 
       uid do
-        access['uid']
+        options.uid
       end
 
-      info do
-
-      end
+      # info do
+      # end
 
       credentials do
-        access
+        c = { 'access_token' => options.access_token }
+        c['access_secret'] = options.access_secret unless options.access_secret.nil?
+        c
       end
 
-      extra do
-      end
+      # extra do
+      # end
 
       class CallbackError < StandardError
         attr_accessor :error, :error_reason, :error_uri
